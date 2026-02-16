@@ -1,44 +1,34 @@
-import React, { useEffect, useState, useContext } from "react";
+import React, { useEffect, useState } from "react";
 import axios from "axios";
-import { AuthContext } from "../context/AuthContext";
 
 const Dashboard = () => {
-  const { user, token } = useContext(AuthContext);
-  const [events, setEvents] = useState([]);
+  const [registrations, setRegistrations] = useState([]);
 
   useEffect(() => {
-    const fetchRegisteredEvents = async () => {
+    const fetchRegistrations = async () => {
       try {
-        const res = await axios.get("http://localhost:5000/api/users/registrations", {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-        setEvents(res.data);
+        const res = await axios.get(
+          "https://bellcorp-event-management-a.onrender.com/api/users/registrations",
+          {
+            headers: {
+              Authorization: `Bearer ${localStorage.getItem("token")}`,
+            },
+          }
+        );
+        setRegistrations(res.data);
       } catch (err) {
-        console.log(err);
+        console.error(err);
       }
     };
-    if (user) fetchRegisteredEvents();
-  }, [user, token]);
 
-  const upcoming = events.filter((e) => new Date(e.date) > new Date());
-  const past = events.filter((e) => new Date(e.date) < new Date());
+    fetchRegistrations();
+  }, []);
 
   return (
     <div>
-      <h2>Dashboard</h2>
-      <h3>Upcoming Events</h3>
-      {upcoming.map((e) => (
-        <div key={e._id}>
-          <p>{e.name}</p>
-          <p>{new Date(e.date).toLocaleString()}</p>
-        </div>
-      ))}
-      <h3>Past Events</h3>
-      {past.map((e) => (
-        <div key={e._id}>
-          <p>{e.name}</p>
-          <p>{new Date(e.date).toLocaleString()}</p>
-        </div>
+      <h2>My Registrations</h2>
+      {registrations.map((event) => (
+        <div key={event._id}>{event.title}</div>
       ))}
     </div>
   );

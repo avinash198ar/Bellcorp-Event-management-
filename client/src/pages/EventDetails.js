@@ -1,50 +1,48 @@
-import React, { useEffect, useState, useContext } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import React, { useEffect, useState } from "react";
 import axios from "axios";
-import { AuthContext } from "../context/AuthContext";
+import { useParams } from "react-router-dom";
 
 const EventDetails = () => {
   const { id } = useParams();
-  const { user, token } = useContext(AuthContext);
-  const navigate = useNavigate();
-  const [event, setEvent] = useState(null);
+  const [event, setEvent] = useState({});
 
   useEffect(() => {
     const fetchEvent = async () => {
-      const res = await axios.get(`http://localhost:5000/api/events/${id}`);
-      setEvent(res.data);
+      try {
+        const res = await axios.get(
+          `https://bellcorp-event-management-a.onrender.com/api/events/${id}`
+        );
+        setEvent(res.data);
+      } catch (err) {
+        console.error(err);
+      }
     };
+
     fetchEvent();
   }, [id]);
 
   const handleRegister = async () => {
-    if (!user) return navigate("/login");
     try {
       await axios.post(
-        `http://localhost:5000/api/events/register/${id}`,
+        `https://bellcorp-event-management-a.onrender.com/api/events/register/${id}`,
         {},
-        { headers: { Authorization: `Bearer ${token}` } }
+        {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+        }
       );
-      alert("Registered successfully!");
+      alert("Registered Successfully");
     } catch (err) {
-      alert(err.response?.data?.message || "Registration failed");
+      console.error(err);
     }
   };
 
-  if (!event) return <p>Loading...</p>;
-
   return (
     <div>
-      <h2>{event.name}</h2>
+      <h2>{event.title}</h2>
       <p>{event.description}</p>
-      <p>Organizer: {event.organizer}</p>
-      <p>Location: {event.location}</p>
-      <p>Date: {new Date(event.date).toLocaleString()}</p>
-      {user ? (
-        <button onClick={handleRegister}>Register</button>
-      ) : (
-        <button onClick={() => navigate("/login")}>Login to Register</button>
-      )}
+      <button onClick={handleRegister}>Register</button>
     </div>
   );
 };
